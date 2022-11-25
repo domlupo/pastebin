@@ -17,7 +17,11 @@ export class InfraStack extends Stack {
     emailLambdaRole.addToPolicy(
       new PolicyStatement({
         resources: ["*"],
-        actions: ["ses:SendEmail", "ses:SendRawEmail"],
+        actions: [
+          "ses:SendEmail",
+          "ses:SendRawEmail",
+          "secretsmanager:GetRandomPassword",
+        ],
       })
     );
     emailLambdaRole.addManagedPolicy(
