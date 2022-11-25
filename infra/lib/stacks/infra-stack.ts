@@ -1,9 +1,8 @@
-import * as cdk from "aws-cdk-lib";
-import { aws_lambda as lambda } from "aws-cdk-lib";
+import { App, aws_lambda as lambda, StackProps, Stack } from "aws-cdk-lib";
 import * as path from "path";
 
-export class InfraStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
+export class InfraStack extends Stack {
+  constructor(scope: App, id: string, props?: StackProps) {
     super(scope, id, props);
 
     const fn = new lambda.Function(this, "HelloWorld", {
