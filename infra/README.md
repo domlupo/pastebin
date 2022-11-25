@@ -1,10 +1,12 @@
 ## Development workflow
 
+```
 npm run lint
 npm run build
 npm run zip
 cdk synth
 cdk deploy
+```
 
 ## Useful commands
 
