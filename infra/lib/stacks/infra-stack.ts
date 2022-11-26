@@ -6,6 +6,7 @@ import {
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
 import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
+import { LambdaIntegration, RestApi } from "aws-cdk-lib/aws-apigateway";
 import * as path from "path";
 
 export class InfraStack extends Stack {
@@ -53,7 +54,7 @@ export class InfraStack extends Stack {
         "service-role/AWSLambdaBasicExecutionRole"
       )
     );
-    const fn = new lambda.Function(this, "AddPaste", {
+    const addPasteLambda = new lambda.Function(this, "AddPaste", {
       runtime: lambda.Runtime.NODEJS_16_X,
       handler: "addPaste.handler",
       code: lambda.Code.fromAsset(
@@ -61,6 +62,15 @@ export class InfraStack extends Stack {
       ),
       role: addPasteLambdaRole,
     });
+
+    const api = new RestApi(this, "PasteBin", {
+      restApiName: "PasteBin",
+    });
+    const addPasteIntegration = new LambdaIntegration(addPasteLambda, {
+      requestTemplates: { "application/json": '{ "statusCode": "200" }' },
+    });
+    const pastes = api.root.addResource("{pastes}");
+    pastes.addMethod("POST", addPasteIntegration);
 
     new Table(this, "UsersTable", {
       tableName: "users",
