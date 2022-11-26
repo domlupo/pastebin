@@ -10,11 +10,15 @@ A serverless [Pastebin](https://en.wikipedia.org/wiki/Pastebin) built using AWS 
 - R: list pastes lambda
 - D: delete paste lambda
 
-**dynamodb table**
+**dynamodb pastes table**
 - title: String (Primary Key)
 - creation_epoch: Number (Sort Key)
 - content: String
 - ttl: Number
+
+**dynamodb users table**
+- name: String (Primary Key)
+- password: String
 
 ## nice to have
 - front end polish

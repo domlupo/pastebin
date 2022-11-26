@@ -5,6 +5,7 @@ import {
   Role,
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
+import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
 import * as path from "path";
 
 export class InfraStack extends Stack {
@@ -18,9 +19,9 @@ export class InfraStack extends Stack {
       new PolicyStatement({
         resources: ["*"],
         actions: [
+          "secretsmanager:GetRandomPassword",
           "ses:SendEmail",
           "ses:SendRawEmail",
-          "secretsmanager:GetRandomPassword",
         ],
       })
     );
@@ -37,6 +38,20 @@ export class InfraStack extends Stack {
         path.join(__dirname, "../lambda-handlers/email.zip")
       ),
       role: emailLambdaRole,
+    });
+
+    new Table(this, "UsersTable", {
+      tableName: "users",
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      partitionKey: { name: "name", type: AttributeType.STRING },
+    });
+
+    new Table(this, "PastesTable", {
+      tableName: "pastes",
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      partitionKey: { name: "title", type: AttributeType.STRING },
+      sortKey: { name: "creation_epoch", type: AttributeType.NUMBER },
+      timeToLiveAttribute: "ttl",
     });
   }
 }
