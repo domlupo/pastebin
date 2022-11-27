@@ -6,9 +6,9 @@ A serverless [Pastebin](https://en.wikipedia.org/wiki/Pastebin) built using AWS 
 
 **lambdas**
 - email lambda: Send email with new password every X days
-- C: add paste lambda
-- R: list pastes lambda
-- D: delete paste lambda
+- add paste lambda
+- scan paste lambda
+- delete paste lambda
 
 **dynamodb pastes table**
 - title: String (Primary Key)
@@ -24,8 +24,9 @@ A serverless [Pastebin](https://en.wikipedia.org/wiki/Pastebin) built using AWS 
 - front end polish
 - frontend mobile support
 - markdown support
-- documentation diagrams
-- U: edit lambda
-- dynamodb attribute: date edited
-- dynamodb pagination (1MB limit)
-- list pastes lambda: date filter instead of ttl dependent
+- README documentation diagrams
+- edit lambda
+- dynamodb attribute: display order
+- dynamodb pagination (current 100 item limit)
+- scan paste lambda: date filter instead of ttl dependent
+- salted passwords
