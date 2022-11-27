@@ -76,15 +76,45 @@ class Pastes extends Stack {
       role: addPasteLambdaRole,
     });
 
-    // add paste Gateway API
+    // delete paste IAM Role
+    const deletePasteLambdaRole = new Role(this, "DeletePasteLambdaRole", {
+      assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
+    });
+    deletePasteLambdaRole.addToPolicy(
+      new PolicyStatement({
+        resources: ["*"],
+        actions: ["dynamodb:DeleteItem"],
+      })
+    );
+    deletePasteLambdaRole.addManagedPolicy(
+      ManagedPolicy.fromAwsManagedPolicyName(
+        "service-role/AWSLambdaBasicExecutionRole"
+      )
+    );
+
+    // delete paste Lambda function
+    const deletePasteLambda = new lambda.Function(this, "DeletePaste", {
+      runtime: lambda.Runtime.NODEJS_16_X,
+      handler: "deletePaste.handler",
+      code: lambda.Code.fromAsset(
+        path.join(__dirname, "../lambda-handlers/deletePaste.zip")
+      ),
+      role: deletePasteLambdaRole,
+    });
+
+    // paste Gateway API
     const api = new RestApi(this, "PasteBin", {
       restApiName: "PasteBin",
     });
     const addPasteIntegration = new LambdaIntegration(addPasteLambda, {
       requestTemplates: { "application/json": '{ "statusCode": "200" }' },
     });
+    const deletePasteIntegration = new LambdaIntegration(deletePasteLambda, {
+      requestTemplates: { "application/json": '{ "statusCode": "200" }' },
+    });
     const pastes = api.root.addResource("{pastes}");
     pastes.addMethod("POST", addPasteIntegration);
+    pastes.addMethod("DELETE", deletePasteIntegration);
   }
 }
 
