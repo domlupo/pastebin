@@ -8,11 +8,13 @@ import {
 import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
 import { LambdaIntegration, RestApi } from "aws-cdk-lib/aws-apigateway";
 import * as path from "path";
+import { Construct } from "constructs";
 
-export class InfraStack extends Stack {
-  constructor(scope: App, id: string, props?: StackProps) {
+class Email extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
+    // IAM Role
     const emailLambdaRole = new Role(this, "EmailLambdaRole", {
       assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
     });
@@ -31,6 +33,8 @@ export class InfraStack extends Stack {
         "service-role/AWSLambdaBasicExecutionRole"
       )
     );
+
+    // Lambda function
     new lambda.Function(this, "Email", {
       runtime: lambda.Runtime.NODEJS_16_X,
       handler: "email.handler",
@@ -39,7 +43,14 @@ export class InfraStack extends Stack {
       ),
       role: emailLambdaRole,
     });
+  }
+}
 
+class Pastes extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
+    super(scope, id, props);
+
+    // add paste IAM Role
     const addPasteLambdaRole = new Role(this, "AddPasteLambdaRole", {
       assumedBy: new ServicePrincipal("lambda.amazonaws.com"),
     });
@@ -54,6 +65,8 @@ export class InfraStack extends Stack {
         "service-role/AWSLambdaBasicExecutionRole"
       )
     );
+
+    // add paste Lambda function
     const addPasteLambda = new lambda.Function(this, "AddPaste", {
       runtime: lambda.Runtime.NODEJS_16_X,
       handler: "addPaste.handler",
@@ -63,6 +76,7 @@ export class InfraStack extends Stack {
       role: addPasteLambdaRole,
     });
 
+    // add paste Gateway API
     const api = new RestApi(this, "PasteBin", {
       restApiName: "PasteBin",
     });
@@ -71,6 +85,12 @@ export class InfraStack extends Stack {
     });
     const pastes = api.root.addResource("{pastes}");
     pastes.addMethod("POST", addPasteIntegration);
+  }
+}
+
+class Database extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
+    super(scope, id, props);
 
     new Table(this, "UsersTable", {
       tableName: "users",
@@ -85,5 +105,15 @@ export class InfraStack extends Stack {
       sortKey: { name: "creation_epoch_ms", type: AttributeType.NUMBER },
       timeToLiveAttribute: "ttl",
     });
+  }
+}
+
+export class PastebinStack extends Construct {
+  constructor(scope: App, id: string) {
+    super(scope, id);
+
+    new Email(this, "Email");
+    new Pastes(this, "Pastes");
+    new Database(this, "Database");
   }
 }
